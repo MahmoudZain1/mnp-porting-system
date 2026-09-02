@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: mnp-porting-system
+
+  profiles:
+    active: dev
+
+

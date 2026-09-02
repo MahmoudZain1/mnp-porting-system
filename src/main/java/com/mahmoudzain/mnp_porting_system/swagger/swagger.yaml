@@ -1,0 +1,304 @@
+openapi: 3.0.3
+info:
+  title: "Mobile Number Portability API"
+  version: "1.0.0"
+  contact:
+    name: "Mahmoud Zain"
+    email: "zainmahmoud719@gmail.com"
+
+servers:
+  - url: "http://localhost:9090"
+
+tags:
+  - name: "Porting Requests"
+  - name: "Mobile Number Status"
+
+paths:
+  /porting-requests:
+    post:
+      tags: ["Porting Requests"]
+      summary: "Create a mobile number porting request"
+      operationId: "createPortingRequest"
+      parameters:
+        - $ref: "#/components/parameters/OrganizationHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePortingDTO"
+      responses:
+        "201":
+          description: "Porting request created successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortingRequestVTO"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/InvalidOrganization"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+    get:
+      tags: ["Porting Requests"]
+      summary: "View porting requests"
+      operationId: "getPortingRequests"
+      parameters:
+        - $ref: "#/components/parameters/OrganizationHeader"
+      responses:
+        "200":
+          description: "Porting requests returned successfully."
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/PortingRequestVTO"
+        "401":
+          $ref: "#/components/responses/InvalidOrganization"
+
+  /porting-requests/{requestId}:
+    get:
+      tags: ["Porting Requests"]
+      summary: "Get a porting request by ID"
+      operationId: "getPortingRequestById"
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/OrganizationHeader"
+      responses:
+        "200":
+          description: "Porting request returned successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortingRequestVTO"
+        "401":
+          $ref: "#/components/responses/InvalidOrganization"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /porting-requests/{requestId}/accept:
+    post:
+      tags: ["Porting Requests"]
+      summary: "Accept a porting request"
+      operationId: "acceptPortingRequest"
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/OrganizationHeader"
+      responses:
+        "200":
+          description: "Porting request accepted successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortingRequestVTO"
+        "401":
+          $ref: "#/components/responses/InvalidOrganization"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /porting-requests/{requestId}/reject:
+    post:
+      tags: ["Porting Requests"]
+      summary: "Reject a porting request"
+      operationId: "rejectPortingRequest"
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/OrganizationHeader"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectPortingDTO"
+      responses:
+        "200":
+          description: "Porting request rejected successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortingRequestVTO"
+        "401":
+          $ref: "#/components/responses/InvalidOrganization"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /mobile-numbers/{phoneNumber}/status:
+    get:
+      tags: ["Mobile Number Status"]
+      summary: "Get the current status of a mobile number"
+      operationId: "getMobileNumberStatus"
+      parameters:
+        - $ref: "#/components/parameters/PhoneNumber"
+        - $ref: "#/components/parameters/OrganizationHeader"
+      responses:
+        "200":
+          description: "Mobile number status returned successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MobileNumberStatusVTO"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/InvalidOrganization"
+
+components:
+  parameters:
+    OrganizationHeader:
+      name: "organization"
+      in: "header"
+      required: true
+      schema:
+        type: "string"
+        enum: ["vodafone", "orange", "etisalat"]
+
+    RequestId:
+      name: "requestId"
+      in: "path"
+      required: true
+      schema:
+        type: "integer"
+        format: "int64"
+        minimum: 1
+
+    PhoneNumber:
+      name: "phoneNumber"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+        pattern: "^01[012][0-9]{8}$"
+        example: "01012345678"
+
+  responses:
+    BadRequest:
+      description: "The request is invalid."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorVTO"
+
+    InvalidOrganization:
+      description: "The organization header is missing or invalid."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorVTO"
+
+    Forbidden:
+      description: "The organization is not allowed to perform this operation."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorVTO"
+
+    NotFound:
+      description: "The requested resource was not found."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorVTO"
+
+    Conflict:
+      description: "The operation conflicts with the current request state."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorVTO"
+
+  schemas:
+    CreatePortingDTO:
+      type: "object"
+      required: ["phoneNumber"]
+      properties:
+        phoneNumber:
+          type: "string"
+          pattern: "^01[012][0-9]{8}$"
+          example: "01012345678"
+
+    RejectPortingDTO:
+      type: "object"
+      properties:
+        reason:
+          type: "string"
+          maxLength: 500
+          example: "The subscriber data could not be verified."
+
+    PortingRequestVTO:
+      type: "object"
+      required: ["id", "phoneNumber", "donor", "recipient", "status", "createdAt", "updatedAt"]
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          example: 1
+        phoneNumber:
+          type: "string"
+          example: "01012345678"
+        donor:
+          type: "string"
+          enum: ["vodafone", "orange", "etisalat"]
+        recipient:
+          type: "string"
+          enum: ["vodafone", "orange", "etisalat"]
+        status:
+          type: "string"
+          enum: ["PENDING", "ACCEPTED", "REJECTED", "CANCELLED"]
+        rejectionReason:
+          type: "string"
+          nullable: true
+        createdAt:
+          type: "string"
+          format: "date-time"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+
+    MobileNumberStatusVTO:
+      type: "object"
+      required: ["phoneNumber", "currentOperator", "ported"]
+      properties:
+        phoneNumber:
+          type: "string"
+          example: "01012345678"
+        currentOperator:
+          type: "string"
+          enum: ["vodafone", "orange", "etisalat"]
+        ported:
+          type: "boolean"
+          example: true
+        activeRequestStatus:
+          type: "string"
+          nullable: true
+          enum: ["PENDING", "ACCEPTED", "REJECTED", "CANCELLED"]
+        lastPortingRequestId:
+          type: "integer"
+          format: "int64"
+          nullable: true
+
+    ErrorVTO:
+      type: "object"
+      required: ["code", "message", "timestamp", "path"]
+      properties:
+        code:
+          type: "string"
+        message:
+          type: "string"
+        timestamp:
+          type: "string"
+          format: "date-time"
+        path:
+          type: "string"
