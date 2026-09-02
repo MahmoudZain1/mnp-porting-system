@@ -36,6 +36,10 @@ public class PortingRequest {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "donor_id")
+    private Operator donor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipient_id")
     private Operator recipient;
 }
