@@ -46,12 +46,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUncaughtException(Exception ex, HttpServletRequest request) {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
-                .code(HttpStatus.UNAUTHORIZED.value())
-                .status(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
                 .message("An unexpected internal server error occurred")
                 .path(request.getRequestURI())
                 .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
