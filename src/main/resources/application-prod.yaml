@@ -1,0 +1,14 @@
+server:
+  port: 9090
+
+spring:
+  datasource:
+    url: jdbc:mysql://mysql:3306/mnp_db?createDatabaseIfNotExist=true&serverTimezone=UTC
+    username: mnp_user
+    password: mnp_password123@@
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false

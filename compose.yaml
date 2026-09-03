@@ -1,1 +1,42 @@
-services: {}
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mnp-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: mnp_db
+      MYSQL_USER: mnp_user
+      MYSQL_PASSWORD: mnp_password123@@
+      MYSQL_ROOT_PASSWORD: root_password123@@
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./src/main/resources/db/mnp-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "mnp_user", "-pmnp_password123@@"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mnp-app
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=mnp_db
+      - DB_USER=mnp_user
+      - DB_PASSWORD=mnp_password123@@
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql-data:
