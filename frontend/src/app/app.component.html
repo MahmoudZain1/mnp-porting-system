@@ -1,0 +1,138 @@
+<div class="container">
+
+  <header class="app-header">
+    <div class="brand">
+      <h1>📱 MNP Porting Portal</h1>
+      <p>Mobile Number Portability Management System</p>
+    </div>
+    <div class="org-selector">
+      <label for="org">Current Operator:</label>
+      <select id="org" [(ngModel)]="selectedOrg" (change)="onOrgChange()">
+        <option value="vodafone">Vodafone</option>
+        <option value="orange">Orange</option>
+        <option value="etisalat">Etisalat</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <h2>📝 Create Porting Order</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label for="phone">Phone Number to Port:</label>
+          <input
+            id="phone"
+            type="text"
+            placeholder="e.g. 01012345678"
+            [(ngModel)]="phoneNumberToCreate"
+            [disabled]="isCreating"
+          />
+        </div>
+
+        <button class="btn btn-primary" (click)="onCreateOrder()" [disabled]="isCreating">
+          {{ isCreating ? 'Submitting...' : 'Submit Porting Request' }}
+        </button>
+
+        <div class="alert alert-success" *ngIf="createMessage">
+          ✅ {{ createMessage }}
+        </div>
+
+        <div class="alert alert-danger" *ngIf="createError">
+          ❌ {{ createError }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>🔍 Check Number Portability Status</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label for="checkPhone">Mobile Number:</label>
+          <input
+            id="checkPhone"
+            type="text"
+            placeholder="e.g. 01012345678"
+            [(ngModel)]="phoneToCheck"
+          />
+        </div>
+
+        <button class="btn btn-secondary" (click)="onCheckStatus()">
+          Check Status
+        </button>
+
+        <div class="status-result" *ngIf="numberStatusResult">
+          <p><strong>Phone:</strong> {{ numberStatusResult.phoneNumber }}</p>
+          <p><strong>Current Operator:</strong> <span class="badge badge-info">{{ numberStatusResult.currentOperator | uppercase }}</span></p>
+          <p><strong>Is Ported:</strong>
+            <span class="badge" [ngClass]="numberStatusResult.ported ? 'badge-success' : 'badge-secondary'">
+              {{ numberStatusResult.ported ? 'YES' : 'NO' }}
+            </span>
+          </p>
+          <p *ngIf="numberStatusResult.activeRequestStatus">
+            <strong>Active Request Status:</strong> {{ numberStatusResult.activeRequestStatus }}
+          </p>
+        </div>
+
+        <div class="alert alert-danger" *ngIf="statusError">
+          ❌ {{ statusError }}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card table-card">
+    <div class="card-header flex-between">
+      <h2>📋 Existing Porting Orders ({{ selectedOrg | uppercase }})</h2>
+      <button class="btn btn-outline" (click)="loadRequests()" [disabled]="isLoadingRequests">
+        🔄 Refresh Orders
+      </button>
+    </div>
+    <div class="card-body table-responsive">
+
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Phone Number</th>
+          <th>Donor (From)</th>
+          <th>Recipient (To)</th>
+          <th>Status</th>
+          <th>Created At</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let req of requestsList">
+          <td>#{{ req.id }}</td>
+          <td><strong>{{ req.phoneNumber }}</strong></td>
+          <td><span class="badge badge-donor">{{ req.donor | uppercase }}</span></td>
+          <td><span class="badge badge-recipient">{{ req.recipient | uppercase }}</span></td>
+          <td>
+              <span class="badge" [ngClass]="{
+                'badge-warning': req.status === 'PENDING',
+                'badge-success': req.status === 'ACCEPTED',
+                'badge-danger': req.status === 'REJECTED',
+                'badge-secondary': req.status === 'CANCELLED'
+              }">
+                {{ req.status }}
+              </span>
+          </td>
+          <td>{{ req.createdAt | date:'medium' }}</td>
+        </tr>
+
+        <tr *ngIf="requestsList.length === 0 && !isLoadingRequests">
+          <td colspan="6" class="text-center">No porting requests found for {{ selectedOrg | uppercase }}.</td>
+        </tr>
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+
+</div>
