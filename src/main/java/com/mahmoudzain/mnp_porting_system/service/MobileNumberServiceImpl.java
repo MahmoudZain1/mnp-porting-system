@@ -32,10 +32,10 @@ public class MobileNumberServiceImpl implements MobileNumberService {
 
     @Override
     public MobileNumberStatusVTO getMobileNumberStatus(String phoneNumber, Organization organization) {
+        String validatedPhoneNumber = validatePhoneNumber(phoneNumber);
         operatorRepository.findByOrganization(organization)
                 .orElseThrow(() -> new BusinessException(MnpErrors.INVALID_ORGANIZATION));
 
-        String validatedPhoneNumber = validatePhoneNumber(phoneNumber);
         String prefix = validatedPhoneNumber.substring(0, 3);
 
         MobileNumberRange range = mobileNumberRangeRepository.findByPrefix(prefix)
